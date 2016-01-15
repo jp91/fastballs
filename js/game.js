@@ -18,11 +18,13 @@ var GF = function () {
         gameRunning: 1,
         gameOver: 2
     };
-    var currentGameState = gameStates.gameRunning;
+    var currentGameState = gameStates.mainMenu;
     var currentLevel = 1;
     var TIME_BETWEEN_LEVELS = 3000; // 10 seconds
     var currentLevelTime = TIME_BETWEEN_LEVELS;
     var plopSound; // Sound of a ball exploding
+    var highscoreArray = [];
+    var highscore = 1;
 
     // The monster !
     var monster = {
@@ -73,7 +75,7 @@ var GF = function () {
         measureFPS(time);
 
         // number of ms since last frame draw
-        delta = timer(time);
+        delta = timer(time) ;
 
         // Clear the canvas
         clearCanvas();
@@ -84,7 +86,6 @@ var GF = function () {
 
         switch (currentGameState) {
             case gameStates.gameRunning:
-
                 // draw the monster
                 drawMyMonster(monster);
                 drawMyTarget(target);
@@ -116,13 +117,97 @@ var GF = function () {
 
                 break;
             case gameStates.mainMenu:
-                // TO DO !
+
+                if(currentLevel>highscore){
+                    highscore = currentLevel;
+
+                    highscoreArray.unshift(highscore);
+                    console.log(highscoreArray);
+                }
+
+                ctx.font = "50pt Impact";
+                var text = "#FastBalls!";
+                ctx.fillStyle = "red";
+                ctx.fillText(text,(w/6)-3, 100);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(text,(w/6)+3, 100);
+                ctx.fillStyle = "#000";
+                ctx.fillText(text, (w/6), 100);
+
+                var soustext1 ="Meilleurs scores :";
+                ctx.font = "15pt Impact";
+                ctx.fillStyle = "red";
+                ctx.fillText(soustext1,(w/3)-1, 200);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(soustext1, (w/3)+1, 200);
+                ctx.fillStyle = "#000";
+                ctx.fillText(soustext1, w/3, 200);
+
+
+                var ligne = 250;
+                for (var i = 0; i < highscoreArray.length; i++) {
+                    ctx.font = "15pt Impact";
+                    ctx.fillStyle = "#FF4422";
+                    ctx.fillText("#"+(i+1)+". Niveau "+ highscoreArray[i],(w/5)-1, ligne+i*20);
+                }
+
+                var soustext2 ="Taper espace pour lancer la partie !";
+                ctx.font = "15pt Impact";
+                ctx.fillStyle = "red";
+                ctx.fillText(soustext2,(w/5)-1, h-100);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(soustext2, (w/5)+1, h-100);
+                ctx.fillStyle = "#000";
+                ctx.fillText(soustext2, w/5, h-100);
+
+                if (inputStates.space) {
+                    startNewGame();
+                }
                 break;
             case gameStates.gameOver:
-                ctx.fillText("GAME OVER \n TO LEVEL "+currentLevel, 50, 100);
-                ctx.fillText("Press SPACE to start again", 50, 150);
-                ctx.fillText("Move with arrow keys", 50, 200);
-                ctx.fillText("Evitez les projectiles et faites attention au temps !", 50, 250);
+
+                if(currentLevel>highscore){
+                    highscore = currentLevel;
+
+                    highscoreArray.unshift(highscore);
+                    console.log(highscoreArray);
+                }
+
+                ctx.font = "50pt Impact";
+                var text = "#FastBalls!";
+                ctx.fillStyle = "red";
+                ctx.fillText(text,(w/6)-3, 100);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(text,(w/6)+3, 100);
+                ctx.fillStyle = "#000";
+                ctx.fillText(text, (w/6), 100);
+
+                var soustext1 ="Meilleurs scores :";
+                ctx.font = "15pt Impact";
+                ctx.fillStyle = "red";
+                ctx.fillText(soustext1,(w/3)-1, 200);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(soustext1, (w/3)+1, 200);
+                ctx.fillStyle = "#000";
+                ctx.fillText(soustext1, w/3, 200);
+
+                var ligne = 250;
+                for (var i = 0; i < highscoreArray.length; i++) {
+                    ctx.font = "15pt Impact";
+                    ctx.fillStyle = "#FF4422";
+                    ctx.fillText("#"+(i+1)+". Niveau "+ highscoreArray[i],(w/5)-1, ligne+i*20);
+                }
+                
+
+                var soustext2 ="Taper espace pour lancer la partie !";
+                ctx.font = "15pt Impact";
+                ctx.fillStyle = "red";
+                ctx.fillText(soustext2,(w/5)-1, h-100);
+                ctx.fillStyle = "cyan";
+                ctx.fillText(soustext2, (w/5)+1, h-100);
+                ctx.fillStyle = "#000";
+                ctx.fillText(soustext2, w/5, h-100);
+
                 if (inputStates.space) {
                     startNewGame();
                 }
@@ -135,13 +220,13 @@ var GF = function () {
 
     function startNewGame() {
         monster.dead = false;
-        currentLevelTime = 3000;
+        currentLevelTime = 3000;        
         currentLevel = 1;
         nbBalls = 1;
         monster.x = 225;
         monster.y = 650;
         createBalls(nbBalls);
-        currentGameState = gameStates.gameRunning;
+        currentGameState = gameStates.gameRunning;   
     }
 
     function goToNextLevel() {
@@ -154,7 +239,6 @@ var GF = function () {
         target.x = 450*Math.random();
         target.y = 450*Math.random();
         createBalls(nbBalls);
-        
     }
 
     function displayScore() {
@@ -202,6 +286,8 @@ var GF = function () {
         // Move and draw each ball, test collisions, 
         for (var i = 0; i < ballArray.length; i++) {
             var ball = ballArray[i];
+            // 3) draw the ball
+            ball.draw(ctx);
 
             // 1) move the ball
             ball.move();
@@ -210,6 +296,8 @@ var GF = function () {
             testCollisionWithWalls(ball, w, h);
             // test if the monster collides with wall
             testCollisionCarreWithWalls(monster, w, h);
+            // Test if the target collides 
+            test(target.x, target.y, target.width, target.height, ball);
 
             // Test if the monster collides
             if (circRectsOverlap(monster.x, monster.y,
@@ -226,10 +314,6 @@ var GF = function () {
 
             
 
-            // 3) draw the ball
-            ball.draw(ctx);
-            // Test if the target collides 
-            test(target.x, target.y, target.width, target.height, ball);
         }
     }
 
@@ -271,12 +355,24 @@ function test(x0, y0, w0, h0, ball) {
             } else {
                 i--;
             }
-
-            
-
-
         }
     }
+
+    function star(ctx, x, y, r, p, m){
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x, y);
+        ctx.moveTo(0,0-r);
+        for (var i = 0; i < p; i++)
+        {
+            ctx.rotate(Math.PI / p);
+            ctx.lineTo(0, 0 - (r*m));
+            ctx.rotate(Math.PI / p);
+            ctx.lineTo(0, 0 - r);
+        }
+        ctx.fill();
+        ctx.restore();
+}
 
     function loadAssets(callback) {
         // here we should load the souds, the sprite sheets etc.
@@ -295,6 +391,9 @@ function test(x0, y0, w0, h0, ball) {
             }
         });
     }
+
+
+
     var start = function () {
         initFPSCounter();
 

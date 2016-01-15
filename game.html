@@ -17,5 +17,13 @@
 </head>
 <body>
   <canvas id="myCanvas"  width="500" height="700"></canvas>
+  <audio id="music" src="musique/fatalize.mp3" loop autoplay></audio>
+  <div style="text-align:center;">Musique du jeu :
+  <button id="btn">pause</button></div>
+  <script type="text/javascript">
+    var btn = document.getElementById('btn');
+    btn.style.width = "100px";
+    btn.onclick=function(){if(!music.paused){music.pause(); btn.innerHTML = "play";}else{music.play(); btn.innerHTML = "pause";}};
+  </script>
 </body>
 </html>
